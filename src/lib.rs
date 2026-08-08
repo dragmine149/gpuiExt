@@ -31,6 +31,24 @@ where
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self;
 }
 
+/// Taken from gpio-component story/lib.rs
+#[allow(dead_code)]
+fn section(title: impl Into<SharedString>, cx: &mut App) -> GroupBox {
+    let title = title.into();
+    GroupBox::new()
+        .w_full()
+        .id(title.clone())
+        .outline()
+        .title(h_flex().justify_between().w_full().gap_4().child(title))
+        .content_style(
+            StyleRefinement::default()
+                .rounded(cx.theme().radius_lg)
+                .overflow_x_hidden()
+                .items_center()
+                .justify_center(),
+        )
+}
+
 /// Helper trait for assigning structs as global structs.
 ///
 /// Also see [writer::Writer]
