@@ -23,19 +23,33 @@ pub(crate) mod transitions;
 pub(crate) mod writer;
 
 /// A trait to skip some of the announces of creating a new entity for a struct all the time.
+///
+/// Usage
+/// ```rs
+/// struct A {};
+/// impl GPUIStructHelper for A {
+/// 	fn new(window, cx, data) -> Self {
+/// 		Self {}
+/// 	}
+/// }
+///
+/// fn some_fn(window, cx) -> Entity<A> {
+/// 	A::view(window, cx, None)
+/// }
+/// ```
 pub(crate) trait GPUIStructHelper
 where
     Self: 'static + Sized,
 {
     /// Turn itself into a usable entity.
-    fn view(window: &mut Window, cx: &mut App) -> Entity<Self>
+    fn view(window: &mut Window, cx: &mut App, data: Option<TransferData>) -> Entity<Self>
     where
         Self: Sized,
     {
-        cx.new(|cx| Self::new(window, cx))
+        cx.new(|cx| Self::new(window, cx, data))
     }
     /// Create the struct itself.
-    fn new(window: &mut Window, cx: &mut Context<Self>) -> Self;
+    fn new(window: &mut Window, cx: &mut Context<Self>, data: Option<TransferData>) -> Self;
 }
 
 /// Taken from gpui-component story/lib.rs
@@ -234,7 +248,7 @@ pub fn main(config_dir: PathBuf, data: TransferData) {
                     ..Default::default()
                 },
                 |window, cx| {
-                    let home = Home::view(window, cx, data);
+                    let home = Home::view(window, cx, Some(data));
                     cx.new(|cx| Root::new(home, window, cx))
                 },
             )

@@ -7,12 +7,12 @@ pub struct Home {
     main_window: AnyWindowHandle,
 }
 impl Home {
-    pub fn view(window: &mut Window, cx: &mut App, data: TransferData) -> Entity<Self> {
+    pub fn view(window: &mut Window, cx: &mut App, data: Option<TransferData>) -> Entity<Self> {
         cx.new(|cx| Self::new(window, cx, data))
     }
-    fn new(window: &mut Window, cx: &mut Context<Self>, data: TransferData) -> Self {
+    fn new(window: &mut Window, cx: &mut Context<Self>, data: Option<TransferData>) -> Self {
         Self { 
-        	data, 
+        	data: data.unwrap(),
         	main_window: window.window_handle()
         }
     }
