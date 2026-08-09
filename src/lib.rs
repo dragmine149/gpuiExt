@@ -1,18 +1,25 @@
 use crate::{
     data::TransferData,
     home::Home,
+    transitions::Transitions,
     writer::{Writer, config::Config},
 };
 use anyhow::anyhow;
 use gpui::{
     App, AppContext, AssetSource, AsyncApp, Context, Entity, Global, KeyBinding, Length,
-    SharedString, Task, TitlebarOptions, WeakEntity, Window, WindowOptions, actions,
+    ParentElement, SharedString, StyleRefinement, Styled, Task, TitlebarOptions, WeakEntity,
+    Window, WindowOptions, actions,
 };
-use gpui_component::Root;
+use gpui_component::{
+    ActiveTheme, Root,
+    group_box::{GroupBox, GroupBoxVariants},
+    h_flex,
+};
 use rust_embed::RustEmbed;
 use std::{fs, path::PathBuf, sync::mpsc};
 pub mod data;
 pub(crate) mod home;
+pub(crate) mod transitions;
 pub(crate) mod writer;
 
 /// A trait to skip some of the announces of creating a new entity for a struct all the time.
@@ -31,7 +38,10 @@ where
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self;
 }
 
-/// Taken from gpio-component story/lib.rs
+/// Taken from gpui-component story/lib.rs
+///
+/// Returns a [gpui_component::group_box::GroupBox] template to section off the children.
+/// Title is shown outside the section
 #[allow(dead_code)]
 fn section(title: impl Into<SharedString>, cx: &mut App) -> GroupBox {
     let title = title.into();
@@ -179,6 +189,7 @@ pub fn main(config_dir: PathBuf, data: TransferData) {
             gpui_component::Theme::change(gpui_component::ThemeMode::Dark, None, cx);
 
             writer::init_writers(cx, &config_dir);
+            Transitions::init(cx);
 
             let theme_folder = config_dir.join("Themes");
             if !theme_folder.exists() {
