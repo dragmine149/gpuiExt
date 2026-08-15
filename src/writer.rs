@@ -3,10 +3,6 @@ use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use std::{io::Write, path::Path, sync::Arc, time::Duration};
 
-pub(crate) mod config;
-pub(crate) mod init;
-pub(crate) use init::init_writers;
-
 /// Main holder for data, this has some extra information we need to store for later writing.
 struct WriterHolder<Writer>
 where
@@ -93,7 +89,7 @@ where
                     .timer(Duration::from_secs(5))
                     .await;
                 // then save it all.
-                app.update_global::<WriterHolder<Self>, _>(|holder, _| {
+                _ = app.update_global::<WriterHolder<Self>, _>(|holder, _| {
                     println!("Writing {} to disk!", Self::get_name());
                     holder.write_to_disk();
                 });
@@ -140,9 +136,7 @@ where
 }
 
 /// Attempts to read the file from disk. Will provide a default struct if failed.
-pub(crate) fn try_read_json<T: std::fmt::Debug + Default + for<'de> Deserialize<'de>>(
-    path: &Path,
-) -> T {
+pub fn try_read_json<T: std::fmt::Debug + Default + for<'de> Deserialize<'de>>(path: &Path) -> T {
     let Ok(data) = std::fs::read(path) else {
         return T::default();
     };
@@ -151,7 +145,7 @@ pub(crate) fn try_read_json<T: std::fmt::Debug + Default + for<'de> Deserialize<
 
 /// Writes the file to disk, but does it in a way which reduces the chances of either file getting corrupted.
 /// by using a new file then moving.
-pub(crate) fn write_safe(path: &Path, content: &[u8]) -> std::io::Result<()> {
+pub fn write_safe(path: &Path, content: &[u8]) -> std::io::Result<()> {
     if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
