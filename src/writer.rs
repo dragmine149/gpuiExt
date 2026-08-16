@@ -1,4 +1,5 @@
 use gpui::{App, Global, Task};
+use log::debug;
 use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use std::{io::Write, path::Path, sync::Arc, time::Duration};
@@ -90,6 +91,8 @@ where
                 // then save it all.
                 app.update_global::<WriterHolder<Self>, _>(|holder, _| {
                     println!("Writing {} to disk!", Self::get_name());
+                _ = app.update_global::<WriterHolder<Self>, _>(|holder, _| {
+                    debug!("Writing {} to disk!", Self::get_name());
                     holder.write_to_disk();
                 });
             });

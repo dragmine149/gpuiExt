@@ -9,13 +9,14 @@ use gpui_component::{
     h_flex,
 };
 
+use log::trace;
 use std::sync::mpsc;
 pub mod notify;
 pub mod writer;
 
 /// A trait to skip some of the announces of creating a new entity for a struct all the time.
 ///
-/// Usage
+/// # Usage
 /// ```rs
 /// struct A {};
 /// impl GPUIStructHelper for A {
@@ -66,8 +67,34 @@ pub fn section(title: impl Into<SharedString>, cx: &mut App) -> GroupBox {
 /// Helper trait for assigning structs as global structs.
 ///
 /// Also see [writer::Writer]
+///
+/// # Usage
+/// ```rs
+/// #[derive(Default)]
+/// struct SomeStruct {
+///     data: bool,
+/// }
+/// impl GlobalExt for SomeStruct {}
+///
+/// fn main(cx) {
+///     SomeStruct::init_default(cx);
+///
+///     SomeStruct::get_mut(cx).data = true;
+///     println!("{}", SomeStruct::get(cx).data); // true
+/// }
+/// ```
 pub trait GlobalExt: Global + Sized {
+    /// Initialise the global with the currently created struct.
+    ///
+    /// This requires the struct to be created first as we don't know if there is a `new` function.
+    ///
+    /// Also see [GlobalExt::init_default]
+    fn init(self, cx: &mut App) {
+        cx.set_global(self);
+    }
     /// Initialise the global with a default version of the given struct.
+    ///
+    /// Also see [GlobalExt::init]
     fn init_default(cx: &mut App)
     where
         Self: Default,
@@ -75,6 +102,8 @@ pub trait GlobalExt: Global + Sized {
         cx.set_global(Self::default());
     }
     /// Same as [GlobalExt::get] but returns a clone of the data instead.
+    ///
+    /// Note: This clones the whole struct, Preferably use [GlobalExt::get] instead and clone the individual items
     fn get_copy(cx: &App) -> Self
     where
         Self: Clone,
@@ -100,6 +129,27 @@ pub trait GlobalExt: Global + Sized {
 ///
 /// # Returns
 /// Same thing as [gpui::Context::spawn] does, and is what expected by the inner function.
+///
+/// # Usage
+/// ```rs
+/// // Somewhere in your codebase
+/// let (rx, tx) = channel::<String>();
+///
+/// // in a gpui struct initialise (new/view) function
+/// fn new(window: &mut Window, cx: &mut Context<Self>, rx: Receiver<T>) -> Self {
+///     thread_to_main(cx, rx, async |this, cx, rx| {
+///         while let Ok(msg) = rx.recv().await {
+///             println!("msg: {}", msg);
+///         }
+///     }).detach();
+///     Self { ... }
+/// }
+///
+/// // In a separate thread somewhere
+/// while true {
+///     tx.send("Hello".to_string());
+/// }
+/// ```
 pub fn thread_to_main<AsyncFn, R, T, Cont>(
     cx: &mut Context<Cont>,
     receiver: mpsc::Receiver<T>,
@@ -112,7 +162,7 @@ where
     T: Send + 'static,
     Cont: 'static,
 {
-    println!("Setup connections");
+    trace!("Setup connections");
     let (tx, rx) = async_channel::unbounded::<T>();
     cx.background_spawn(async move {
         loop {
@@ -127,13 +177,15 @@ where
     })
     .detach();
 
-    println!("Returning spawn obj");
+    trace!("Returning spawn obj");
     cx.spawn(async move |this, cx| f(this, cx, rx).await)
 }
 
 /// Use a percentage in terms of length. Shorthand for `Length::Definite(gpui::DefiniteLength::Fraction())`
 ///
 /// value is in terms of percentage, hence is valid between 0 and 100. value will also be clamped if it's too high.
+/// # Parameters
+/// - value: A percentage between `0.0` and `100.0`. Will be clamped between those ranges before being defined.
 pub fn percent(value: f32) -> Length {
     Length::Definite(gpui::DefiniteLength::Fraction(
         value.clamp(0.0, 100.0) / 100.0,
@@ -141,6 +193,11 @@ pub fn percent(value: f32) -> Length {
 }
 
 /// Function for loading a theme. Will also update the config at the same time.
+///
+/// # Parameters
+/// - cx: App context, used for accessing globals.
+/// - theme_name: The name of the theme to load
+/// - update_fn: Callback function to apply the new theme name to your config.
 pub fn load_theme<F>(cx: &mut App, theme_name: &SharedString, update_fn: F)
 where
     F: Fn(&SharedString, &mut App),
