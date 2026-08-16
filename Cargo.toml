@@ -3,6 +3,9 @@ name = "gpui_ext"
 description = "Some useful functions i use when working with GPUI"
 version = "0.1.0"
 edition = "2024"
+readme = "readme.md"
+homepage = "https://github.com/dragmine149/gpuiExt"
+keywords = ["gpui"]
 
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed" }
