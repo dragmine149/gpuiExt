@@ -3,10 +3,6 @@ use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use std::{io::Write, path::Path, sync::Arc, time::Duration};
 
-pub(crate) mod config;
-pub(crate) mod init;
-pub(crate) use init::init_writers;
-
 /// Main holder for data, this has some extra information we need to store for later writing.
 struct WriterHolder<Writer>
 where
@@ -49,7 +45,6 @@ impl<Writer> Global for WriterHolder<Writer> where
 ///
 /// # Notes
 /// Note that [Writer] doesn't require [crate::GlobalExt], this is because the inner data itself doesn't need to be global, only the outer [WriterHolder].
-#[allow(dead_code)]
 pub trait Writer
 where
     Self:
