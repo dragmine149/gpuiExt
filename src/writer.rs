@@ -89,8 +89,6 @@ where
                     .timer(Duration::from_secs(5))
                     .await;
                 // then save it all.
-                app.update_global::<WriterHolder<Self>, _>(|holder, _| {
-                    println!("Writing {} to disk!", Self::get_name());
                 _ = app.update_global::<WriterHolder<Self>, _>(|holder, _| {
                     debug!("Writing {} to disk!", Self::get_name());
                     holder.write_to_disk();
