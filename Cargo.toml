@@ -6,6 +6,7 @@ description = "Some useful functions i use when working with GPUI"
 readme = "readme.md"
 homepage = "https://github.com/dragmine149/gpuiExt"
 keywords = ["gpui"]
+license-file = "LICENSE"
 
 [dependencies]
 gpui = "0.2.2"
