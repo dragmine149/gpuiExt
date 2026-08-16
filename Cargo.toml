@@ -6,6 +6,7 @@ edition = "2024"
 readme = "readme.md"
 homepage = "https://github.com/dragmine149/gpuiExt"
 keywords = ["gpui"]
+license-file = "LICENSE"
 
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed" }
