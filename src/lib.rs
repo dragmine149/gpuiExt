@@ -1,4 +1,4 @@
-pub use crate::{data::TransferData, writer::Writer};
+pub use crate::writer::Writer;
 use gpui::{
     App, AppContext, AsyncApp, Context, Entity, Global, Length, ParentElement, SharedString,
     StyleRefinement, Styled, Task, WeakEntity, Window,
@@ -9,7 +9,6 @@ use gpui_component::{
     h_flex,
 };
 use std::sync::mpsc;
-pub mod data;
 pub mod notify;
 pub mod writer;
 
@@ -28,28 +27,26 @@ pub mod writer;
 ///     A::view(window, cx, None)
 /// }
 /// ```
-#[allow(dead_code)]
-pub trait GPUIStructHelper
+pub trait GPUIStructHelper<D>
 where
     Self: 'static + Sized,
 {
     /// Turn itself into a usable entity.
-    fn view(window: &mut Window, cx: &mut App, data: Option<TransferData>) -> Entity<Self>
+    fn view(window: &mut Window, cx: &mut App, data: Option<D>) -> Entity<Self>
     where
         Self: Sized,
     {
         cx.new(|cx| Self::new(window, cx, data))
     }
     /// Create the struct itself.
-    fn new(window: &mut Window, cx: &mut Context<Self>, data: Option<TransferData>) -> Self;
+    fn new(window: &mut Window, cx: &mut Context<Self>, data: Option<D>) -> Self;
 }
 
 /// Taken from gpui-component story/lib.rs
 ///
 /// Returns a [gpui_component::group_box::GroupBox] template to section off the children.
 /// Title is shown outside the section
-#[allow(dead_code)]
-fn section(title: impl Into<SharedString>, cx: &mut App) -> GroupBox {
+pub fn section(title: impl Into<SharedString>, cx: &mut App) -> GroupBox {
     let title = title.into();
     GroupBox::new()
         .w_full()
@@ -102,7 +99,6 @@ pub trait GlobalExt: Global + Sized {
 ///
 /// # Returns
 /// Same thing as [gpui::Context::spawn] does, and is what expected by the inner function.
-#[allow(dead_code)]
 pub fn thread_to_main<AsyncFn, R, T, Cont>(
     cx: &mut Context<Cont>,
     receiver: mpsc::Receiver<T>,
@@ -137,7 +133,8 @@ where
 /// Use a percentage in terms of length. Shorthand for `Length::Definite(gpui::DefiniteLength::Fraction())`
 ///
 /// value is in terms of percentage, hence is valid between 0 and 100. value will also be clamped if it's too high.
-#[allow(dead_code)]
+/// # Parameters
+/// - value: A percentage between `0.0` and `100.0`. Will be clamped between those ranges before being defined.
 pub fn percent(value: f32) -> Length {
     Length::Definite(gpui::DefiniteLength::Fraction(
         value.clamp(0.0, 100.0) / 100.0,
@@ -145,7 +142,11 @@ pub fn percent(value: f32) -> Length {
 }
 
 /// Function for loading a theme. Will also update the config at the same time.
-#[allow(dead_code)]
+///
+/// # Parameters
+/// - cx: App context, used for accessing globals.
+/// - theme_name: The name of the theme to load
+/// - update_fn: Callback function to apply the new theme name to your config.
 pub fn load_theme<F>(cx: &mut App, theme_name: &SharedString, update_fn: F)
 where
     F: Fn(&SharedString, &mut App),

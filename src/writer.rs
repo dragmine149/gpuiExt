@@ -45,7 +45,6 @@ impl<Writer> Global for WriterHolder<Writer> where
 ///
 /// # Notes
 /// Note that [Writer] doesn't require [crate::GlobalExt], this is because the inner data itself doesn't need to be global, only the outer [WriterHolder].
-#[allow(dead_code)]
 pub trait Writer
 where
     Self:
