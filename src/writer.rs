@@ -54,8 +54,10 @@ where
     /// Initialise the writer. This attempts to read from the given path.
     fn init(cx: &mut App, path: &Path) {
         let path: Arc<Path> = path.join(format!("{}.json", Self::get_name())).into();
+        let mut data = try_read_json::<Self>(&path);
+        data.post_load();
         cx.set_global(WriterHolder {
-            data: try_read_json::<Self>(&path),
+            data,
             write_task: None,
             path,
         });
@@ -117,6 +119,8 @@ where
 pub trait Save {
     /// Run the code before saving to disk.
     fn pre_save(&mut self) {}
+    /// Run the code after loading. Could be used to check and setup defaults.
+    fn post_load(&mut self) {}
 }
 
 impl<Writer> WriterHolder<Writer>

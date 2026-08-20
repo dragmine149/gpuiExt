@@ -1,0 +1,4 @@
+# Changelog
+
+## Unreleased
+- Added `post_load` to `Save` trait (468a11a)
