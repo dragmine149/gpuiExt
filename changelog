@@ -2,4 +2,8 @@
 
 ## Unreleased
 - Added `post_load` to `Save` trait (468a11a)
+- Added one shot version of `thread_to_main` (`thread_to_main_oneshot`) to lib (5f53278)
 - Remove the `Debug` trait requirement from `Writer` *and relative* traits (3957354)
+
+## 0.1.0
+- Initial release

@@ -181,6 +181,41 @@ where
     cx.spawn(async move |this, cx| f(this, cx, rx).await)
 }
 
+/// One-shot version of [thread_to_main].
+///
+/// After a message has been received from the receiver, the internal tx + rx will be dropped.
+pub fn thread_to_main_oneshot<AsyncFn, R, T, Cont>(
+    cx: &mut Context<Cont>,
+    receiver: mpsc::Receiver<T>,
+    f: AsyncFn,
+) -> Task<R>
+where
+    AsyncFn:
+        AsyncFnOnce(WeakEntity<Cont>, &mut AsyncApp, async_channel::Receiver<T>) -> R + 'static,
+    R: 'static,
+    T: Send + 'static,
+    Cont: 'static,
+{
+    trace!("Setup connections");
+    let (tx, rx) = async_channel::unbounded::<T>();
+    cx.background_spawn(async move {
+            tx.send(
+                receiver
+                    .recv()
+                    .unwrap_or_else(|err| panic!("Failed to get receiver message {}", err)),
+            )
+            .await
+            .expect("Failed to send receiver message");
+        
+    })
+    .detach();
+
+    trace!("Returning spawn obj");
+    cx.spawn(async move |this, cx| f(this, cx, rx).await)
+}
+
+
+
 /// Use a percentage in terms of length. Shorthand for `Length::Definite(gpui::DefiniteLength::Fraction())`
 ///
 /// value is in terms of percentage, hence is valid between 0 and 100. value will also be clamped if it's too high.
