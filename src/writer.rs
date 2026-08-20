@@ -7,7 +7,7 @@ use std::{io::Write, path::Path, sync::Arc, time::Duration};
 /// Main holder for data, this has some extra information we need to store for later writing.
 struct WriterHolder<Writer>
 where
-    Writer: std::fmt::Debug + Serialize + for<'de> Deserialize<'de> + Default + Clone + Save,
+    Writer: Serialize + for<'de> Deserialize<'de> + Default + Clone + Save,
 {
     data: Writer,
     write_task: Option<Task<()>>,
@@ -16,7 +16,7 @@ where
 
 impl<Writer> Global for WriterHolder<Writer> where
     Writer:
-        std::fmt::Debug + Serialize + for<'de> Deserialize<'de> + Default + Clone + Save + 'static
+        Serialize + for<'de> Deserialize<'de> + Default + Clone + Save + 'static
 {
 }
 
@@ -49,7 +49,7 @@ impl<Writer> Global for WriterHolder<Writer> where
 pub trait Writer
 where
     Self:
-        std::fmt::Debug + Clone + Save + Serialize + for<'de> Deserialize<'de> + Default + 'static,
+        Clone + Save + Serialize + for<'de> Deserialize<'de> + Default + 'static,
 {
     /// Initialise the writer. This attempts to read from the given path.
     fn init(cx: &mut App, path: &Path) {
@@ -125,7 +125,7 @@ pub trait Save {
 
 impl<Writer> WriterHolder<Writer>
 where
-    Writer: std::fmt::Debug + Serialize + for<'de> Deserialize<'de> + Default + Clone + Save,
+    Writer: Serialize + for<'de> Deserialize<'de> + Default + Clone + Save,
 {
     /// Write the file to disk, clears the current write_task lock as well.
     fn write_to_disk(&mut self) {
@@ -140,7 +140,7 @@ where
 }
 
 /// Attempts to read the file from disk. Will provide a default struct if failed.
-pub(crate) fn try_read_json<T: std::fmt::Debug + Default + for<'de> Deserialize<'de>>(
+pub(crate) fn try_read_json<T: Default + for<'de> Deserialize<'de>>(
     path: &Path,
 ) -> T {
     let Ok(data) = std::fs::read(path) else {

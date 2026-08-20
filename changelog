@@ -2,3 +2,4 @@
 
 ## Unreleased
 - Added `post_load` to `Save` trait (468a11a)
+- Remove the `Debug` trait requirement from `Writer` *and relative* traits (3957354)
