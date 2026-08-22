@@ -233,6 +233,8 @@ pub fn percent(value: f32) -> Length {
 /// - cx: App context, used for accessing globals.
 /// - theme_name: The name of the theme to load
 /// - update_fn: Callback function to apply the new theme name to your config.
+///
+/// NOTE: Will also refresh every single window after updating.
 pub fn load_theme<F>(cx: &mut App, theme_name: &SharedString, update_fn: F)
 where
     F: Fn(&SharedString, &mut App),
@@ -245,5 +247,6 @@ where
         let glob_theme = gpui_component::Theme::global_mut(cx);
         glob_theme.apply_config(&theme);
         update_fn(theme_name, cx);
+        cx.refresh_windows();
     }
 }
